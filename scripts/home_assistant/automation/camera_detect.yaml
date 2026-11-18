@@ -1,0 +1,51 @@
+alias: 摄像头检测人脸
+description: ''
+triggers:
+  - trigger: state
+    entity_id:
+      - binary_sensor.ren_lian_jian_ce
+    to:
+      - 'on'
+actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.tuya_light
+  - repeat:
+      count: 3
+      sequence:
+        - action: light.turn_on
+          target:
+            entity_id: light.tuya_light
+          data:
+            brightness: 255
+            rgb_color:
+              - 255
+              - 0
+              - 0
+        - delay:
+            seconds: 1
+        - action: light.turn_off
+          target:
+            entity_id: light.tuya_light
+        - delay:
+            seconds: 1
+  - action: light.turn_on
+    target:
+      entity_id: light.tuya_light
+    data:
+      brightness: 255
+      rgb_color:
+        - 0
+        - 0
+        - 255
+  - action: tts.speak
+    target:
+      entity_id: tts.piper
+    data:
+      media_player_entity_id: media_player.music_player_daemon
+      message: 摄像头检测到人脸，触发告警，请关注。
+      cache: true
+  - action: rest_command.feishu_notify_md
+    data:
+      message: 🚨 检测到人脸，已触发紫灯和语音报警。
+mode: single

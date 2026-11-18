@@ -1,0 +1,11 @@
+services:
+  sensevoice-stt:
+    image: ghcr.nju.edu.cn/desmond-dong/sensevoice-stt/sensevoice-stt-aarch64:v1.1.2
+    container_name: sensevoice-stt
+    restart: unless-stopped
+    ports:
+      - "10300:10300"
+    volumes:
+      - /opt/sensevoice/data:/data
+    environment:
+      - TZ=Asia/Shanghai

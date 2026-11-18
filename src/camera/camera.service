@@ -1,0 +1,15 @@
+[Unit]
+Description=HomeBox camera (MJPEG stream + RKNN detection + HA report)
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/homebox/camera
+EnvironmentFile=/etc/homebox/camera.env
+ExecStart=/opt/homebox/venv/bin/python /opt/homebox/camera/http_server.py $CAMERA_ARGS
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

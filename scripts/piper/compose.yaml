@@ -1,0 +1,12 @@
+services:
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: piper
+    restart: unless-stopped
+    ports:
+      - "10200:10200"
+    volumes:
+      - /opt/piper/piper-data:/data
+    command: --voice zh_CN-huayan-medium
+    environment:
+      - TZ=Asia/Shanghai

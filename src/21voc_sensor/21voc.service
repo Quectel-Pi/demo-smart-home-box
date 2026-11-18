@@ -1,0 +1,15 @@
+[Unit]
+Description=HomeBox 21VOC sensor to MQTT bridge
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 程序读的是相对路径 21voc.conf，必须固定工作目录
+WorkingDirectory=/etc/homebox
+ExecStart=/usr/local/bin/21voc
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

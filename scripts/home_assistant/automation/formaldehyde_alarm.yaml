@@ -1,0 +1,39 @@
+alias: 21VOC甲醛超标声光报警
+description: ''
+triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: numeric_state
+    entity_id: sensor.21voc_chuan_gan_qi_jia_quan
+    above: 200
+    for:
+      seconds: 5
+conditions:
+  - condition: numeric_state
+    entity_id: sensor.21voc_chuan_gan_qi_jia_quan
+    above: 200
+actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.tuya_light
+    data:
+      rgb_color:
+        - 255
+        - 0
+        - 0
+      brightness: 255
+  - action: tts.speak
+    target:
+      entity_id: tts.piper
+    data:
+      media_player_entity_id: media_player.music_player_daemon
+      message: >-
+        你好，当前甲醛浓度超限，当前值为 {{ states('sensor.21voc_chuan_gan_qi_jia_quan')
+        }}，请及时通风。
+      cache: true
+  - action: rest_command.feishu_notify_md
+    data:
+      message: >-
+        🚨 甲醛超标：{{ states('sensor.21voc_chuan_gan_qi_jia_quan') }}
+        µg/m³，已触发红灯和语音报警。
+mode: single

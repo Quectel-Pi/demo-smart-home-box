@@ -1,0 +1,119 @@
+alias: 每周家居环境报告
+description: 每周日晚 21:00 汇总周运行数据并推送到飞书
+triggers:
+  - trigger: time
+    at: '21:00:00'
+actions:
+  - action: recorder.get_statistics
+    data:
+      statistic_ids:
+        - sensor.21voc_chuan_gan_qi_jia_quan
+        - sensor.21voc_chuan_gan_qi_eco2
+        - sensor.21voc_chuan_gan_qi_tvoc
+        - sensor.21voc_chuan_gan_qi_shi_du
+        - sensor.21voc_chuan_gan_qi_wen_du
+      period: day
+      start_time: '{{ (now() - timedelta(days=7)).isoformat() }}'
+      end_time: '{{ now().isoformat() }}'
+      types:
+        - mean
+        - max
+    response_variable: stats
+  - action: persistent_notification.create
+    data:
+      title: 周报消息预览
+      message: >-
+        {% set jq = stats.statistics['sensor.21voc_chuan_gan_qi_jia_quan'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set jq_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_jia_quan'] |
+        map(attribute='max') | select('!=', None) | list %} {% set eco2 =
+        stats.statistics['sensor.21voc_chuan_gan_qi_eco2'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set eco2_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_eco2'] |
+        map(attribute='max') | select('!=', None) | list %} {% set tvoc =
+        stats.statistics['sensor.21voc_chuan_gan_qi_tvoc'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set temp =
+        stats.statistics['sensor.21voc_chuan_gan_qi_wen_du'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set temp_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_wen_du'] |
+        map(attribute='max') | select('!=', None) | list %} {% set shi_du =
+        stats.statistics['sensor.21voc_chuan_gan_qi_shi_du'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set shi_du_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_shi_du'] |
+        map(attribute='max') | select('!=', None) | list %} {% set total_min =
+        (states('sensor.tuya_light_deng_guang_zhou_kai_qi_shi_chang') | float(0)
+        * 60) | round(0) | int %}
+
+        📊 本周家居环境报告（{{ (now() - timedelta(days=7)).strftime('%m-%d') }} 至 {{
+        now().strftime('%m-%d') }}）
+
+        **空气质量**
+
+        甲醛 平均 {{ (jq | average | round(1)) if jq else '无数据' }} µg/m³，最高 {{
+        (jq_max | max) if jq_max else '无数据' }} µg/m³
+
+        eCO2 平均 {{ (eco2 | average | round(0)) if eco2 else '无数据' }} ppm，最高 {{
+        (eco2_max | max) if eco2_max else '无数据' }} ppm
+
+        TVOC 平均 {{ (tvoc | average | round(1)) if tvoc else '无数据' }} µg/m³
+
+        **温度和湿度**
+
+        温度 平均 {{ (temp | average | round(1)) if temp else '无数据' }} °C，最高 {{
+        (temp_max | max) if temp_max else '无数据' }} °C
+
+        湿度 平均 {{ (shi_du | average | round(1)) if shi_du else '无数据' }} %，最高 {{
+        (shi_du_max | max) if shi_du_max else '无数据' }} % 
+
+        **智能灯使用**
+
+        本周累计开启 **{{ total_min // 60 }}** 小时 **{{ total_min % 60 }}** 分钟。
+  - action: rest_command.feishu_notify_md
+    data:
+      message: >-
+        {% set jq = stats.statistics['sensor.21voc_chuan_gan_qi_jia_quan'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set jq_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_jia_quan'] |
+        map(attribute='max') | select('!=', None) | list %} {% set eco2 =
+        stats.statistics['sensor.21voc_chuan_gan_qi_eco2'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set eco2_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_eco2'] |
+        map(attribute='max') | select('!=', None) | list %} {% set tvoc =
+        stats.statistics['sensor.21voc_chuan_gan_qi_tvoc'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set temp =
+        stats.statistics['sensor.21voc_chuan_gan_qi_wen_du'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set temp_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_wen_du'] |
+        map(attribute='max') | select('!=', None) | list %} {% set shi_du =
+        stats.statistics['sensor.21voc_chuan_gan_qi_shi_du'] |
+        map(attribute='mean') | select('!=', None) | list %} {% set shi_du_max =
+        stats.statistics['sensor.21voc_chuan_gan_qi_shi_du'] |
+        map(attribute='max') | select('!=', None) | list %} {% set total_min =
+        (states('sensor.tuya_light_deng_guang_zhou_kai_qi_shi_chang') | float(0)
+        * 60) | round(0) | int %}
+
+        📊 本周家居环境报告（{{ (now() - timedelta(days=7)).strftime('%m-%d') }} 至 {{
+        now().strftime('%m-%d') }}）
+
+        **空气质量**
+
+        甲醛 平均 {{ (jq | average | round(1)) if jq else '无数据' }} µg/m³，最高 {{
+        (jq_max | max) if jq_max else '无数据' }} µg/m³
+
+        eCO2 平均 {{ (eco2 | average | round(0)) if eco2 else '无数据' }} ppm，最高 {{
+        (eco2_max | max) if eco2_max else '无数据' }} ppm
+
+        TVOC 平均 {{ (tvoc | average | round(1)) if tvoc else '无数据' }} µg/m³
+
+        **温度和湿度**
+
+        温度 平均 {{ (temp | average | round(1)) if temp else '无数据' }} °C，最高 {{
+        (temp_max | max) if temp_max else '无数据' }} °C
+
+        湿度 平均 {{ (shi_du | average | round(1)) if shi_du else '无数据' }} %，最高 {{
+        (shi_du_max | max) if shi_du_max else '无数据' }} % 
+
+        **智能灯使用**
+
+        本周累计开启 **{{ total_min // 60 }}** 小时 **{{ total_min % 60 }}** 分钟。
+mode: single
